@@ -20,3 +20,11 @@ I quickly moved the sensor back and forward as well as left it below the thresho
 ## Name one feature you didn’t add (or simplified) to keep timing predictable. Why was that the right call for your chosen company?
 
 Initally I tried to make the button put the esp into a low power mode. The thought behind it was to save the most amount of power durring off periods. However, sleep and booting from low power modes adds significant complexcities to real time systems, and can often lead to drift or missing deadlines. As security is often mission critical, the added complexcity and possible missing of deadlines were not worth the decrease in power usage. Instead the button simply suspends the tasks, and then re enables them on a second press, this still allows the system to be disabled but continue on schedule once reawoken. 
+
+|Task| Period|Hard/Soft|Consequence|
+|---|---|---|---|
+|heartbeat|1s|soft|users may not know the system is running|
+|toggle system|1ms|Hard| system doesn't pause and a false alarm is triggered, or the system doesn't turn on and the building is not protected. A system failure|
+|ultrasonic sensor task| 20ms| Hard| sensor doesn't pick up an intruder and the building could be broken into, so a system failure.|
+|summary task| 1s| firm| User may miss a previous trip, but the led alert will still show, system functions at a reduced rate|
+|log trip task| 20ms| hard| sensor trigger time is not propperly logged in the system, could lead to an overflow queue which prevents the sensor from working. A system failure| 
