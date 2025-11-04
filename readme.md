@@ -1,0 +1,22 @@
+# Scheduler Fit: 
+## How do your task priorities / RTOS settings guarantee every H task’s deadline in Wokwi? Cite one timestamp pair that proves it.
+the first thing done to help guarantee every hard deadline task is to set the priorities of soft tasks to be smaller than the hard tasks. The heart beat task is no system critical, so it has the lowest priority of one. The system disable button has the highest priority, as turnning off the system should not be held up lest a false alarm is triggered. additionally its run time is pretty much constant as it doesn't need to wait on another task starting and ending within the same 1 ms period meeting its strict deadline. Next moving down the line, the next highest priorty is reading from the sensor. As no perioditic task has a higher priority it should stick to its 20ms peroid/deadline unless the system is suspended, and this is shown with consistant time stamps spaced 20ms apart without drift. 
+The Summary task is next, it has a long peroid/deadline of 1 second. as this task competes with the log task for 3 mutexes, it is given a long period to allow for leyway when the sensor and logger task are firing.
+Lastly, the logger task has a priority greater than the heart beat but small than everything else. It is triggered whenever the sensor detects a close object. It has a deadline of 20ms to match pace with the worse case where the sensor is triggered on every call. The logger task is given a low prioty as it can work through the back log while no new object is detected as if there is a recent object, alerting the user is more important than logging the data.    
+
+
+# Race‑Proofing: 
+## Where could a race occur? Show the exact line(s) you protected and which primitive solved it.
+the first race condition that could occur in my code is between the logger task and the sensor task. If no primatives were used, then it is possible for the logger to log an empty slot into the log, or for the sensor to overflow the queue. And for possible future proofing, both log arrays have a mutex for protecting it when it is accessed in the future. With out a mutex it is possible for future tasks to display incorrect information due to missing values that are in the middle of being added, or added since the array has been obtianed. 
+The more apparent race condition comes in the summary task, where it accesses both buffers. The buffers and the pos variables are suscecptable to race conditions if not properly protected. Without the mutexes, its possible for pos index to skip a position or for the values in the buffer to change mid read. Both of which would be enough to casue a system failure in our security system.   
+
+
+# Worst‑Case Spike: 
+## Describe the heaviest load you threw at the prototype (e.g., sensor spam, comm burst). What margin (of time) remained before an H deadline would slip?
+I quickly moved the sensor back and forward as well as left it below the threshold to messure how the system reacted to both a variation of data and repeated triggering, two types of sensor spam. In both cases the logger task, consumer, was able to keep pace with the sensor task, producer, which ensure no risk of data being lost due the producer waiting for an open slot on the queue. Additonially, the logger and sensor task both complete their tasks within a milisecond. This can be proven by uncommenting the time statements at the begain and end of the functions, which show the same time value in ms. Assuming worse case, that gives us 19ms of leway for both reading and processing the data. 
+
+
+# Design Trade‑off: 
+## Name one feature you didn’t add (or simplified) to keep timing predictable. Why was that the right call for your chosen company?
+
+Initally I tried to make the button put the esp into a low power mode. The thought behind it was to save the most amount of power durring off periods. However, sleep and booting from low power modes adds significant complexcities to real time systems, and can often lead to drift or missing deadlines. As security is often mission critical, the added complexcity and possible missing of deadlines were not worth the decrease in power usage. Instead the button simply suspends the tasks, and then re enables them on a second press, this still allows the system to be disabled but continue on schedule once reawoken. 
