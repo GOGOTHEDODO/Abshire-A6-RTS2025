@@ -1,3 +1,6 @@
+# Company summary
+Orlando Security co is a local based advance security company set on providing the best safety at low prices through the power of automation and technology. Our company uses advance real time systems combined with state of the art sonic sensors to detect any intruders 20 times faster than your eye can blink! Addtionally our review feature allows you to look back and see when and where the intruder entered allowing for fast apprehension by law enforcement. Finally all data is stored locally on your own system so no need to worry about data leaks or down time. 
+
 # Scheduler Fit: 
 ## How do your task priorities / RTOS settings guarantee every H task’s deadline in Wokwi? Cite one timestamp pair that proves it.
 the first thing done to help guarantee every hard deadline task is to set the priorities of soft tasks to be smaller than the hard tasks. The heart beat task is no system critical, so it has the lowest priority of one. The system disable button has the highest priority, as turnning off the system should not be held up lest a false alarm is triggered. additionally its run time is pretty much constant as it doesn't need to wait on another task starting and ending within the same 1 ms period meeting its strict deadline. Next moving down the line, the next highest priorty is reading from the sensor. As no perioditic task has a higher priority it should stick to its 20ms peroid/deadline unless the system is suspended, and this is shown with consistant time stamps spaced 20ms apart without drift. 
@@ -21,6 +24,7 @@ I quickly moved the sensor back and forward as well as left it below the thresho
 
 Initally I tried to make the button put the esp into a low power mode. The thought behind it was to save the most amount of power durring off periods. However, sleep and booting from low power modes adds significant complexcities to real time systems, and can often lead to drift or missing deadlines. As security is often mission critical, the added complexcity and possible missing of deadlines were not worth the decrease in power usage. Instead the button simply suspends the tasks, and then re enables them on a second press, this still allows the system to be disabled but continue on schedule once reawoken. 
 
+# Task Table
 |Task| Period|Hard/Soft|Consequence|
 |---|---|---|---|
 |heartbeat|1s|soft|users may not know the system is running|
